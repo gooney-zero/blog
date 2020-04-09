@@ -1,13 +1,12 @@
 import React from 'react';
-import { Button } from 'antd';
-import './App.css';
+
+import './App.less';
+
+import Routes from './routes';
 
 function App() {
   return (
-    <div className="App">
-      <p>1111</p>
-      <Button type="primary">Button</Button>
-    </div>
+    <Routes />
   );
 }
 
