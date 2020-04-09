@@ -2,7 +2,6 @@ import React from 'react';
 import './index.less';
 import MenuLink from 'src/components/MenuLink';
 import { GithubOutlined, CopyrightOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
 import { GITHUB_LINK } from 'src/constants/common';
 
 export default function Home() {
