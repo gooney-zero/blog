@@ -1,4 +1,7 @@
 
+// declare function getMonth(date: string): string;
+// declare function getMonth(date: Date): string;
+
 const dateObj = {
   1: 'Jan',
   2: 'Feb',
@@ -14,4 +17,17 @@ const dateObj = {
   12: 'Dec',
 };
 
-export const getMonth = (k: number) => dateObj[k as keyof typeof dateObj] || '';
+export function getTime(date: string | Date) {
+  let k = 1;
+  if (typeof date === 'string') {
+    const d = new Date(date);
+    if (d.toString() !== 'Invalid Date') {
+      date = d;
+    } else {
+      date = new Date()
+    }
+  }
+  k = date.getMonth() + 1;
+  return `${dateObj[k as keyof typeof dateObj]}  ${date.getDate()}`
+}
+// export const getMonth = (k: number) => dateObj[k as keyof typeof dateObj] || '';

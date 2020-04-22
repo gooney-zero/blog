@@ -22,9 +22,9 @@ class MarkUtils {
     marked('')
   }
 
-  async marked(data: string) {
+  marked(data: string) {
     if (data) {
-      return await marked(data)
+      return marked(data)
     } else {
       return '';
     }

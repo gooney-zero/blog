@@ -5,10 +5,14 @@ import "./style/global.css";
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import { ViewportProvider } from './components/Viewport';
 
 ReactDOM.render(
   // <React.StrictMode>
-  <App />,
+  <ViewportProvider>
+    <App />,
+  </ViewportProvider>,
+
   //  </React.StrictMode>,
   document.getElementById('root')
 );

@@ -1,0 +1,47 @@
+.write {
+  width : 85%;
+  margin: 0 auto;
+
+  &-header {
+    margin         : 20px 0;
+    display        : flex;
+    justify-content: space-between;
+    align-items    : center;
+  }
+
+  &-editor {
+    &-title {
+      font-family: 'Consolas', 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+      box-sizing : border-box;
+      padding    : 8px 0;
+
+      resize     : none;
+      border     : none;
+      outline    : none;
+      font-size  : inherit;
+      color      : inherit;
+      background : none;
+      line-height: inherit;
+    }
+  }
+
+  &-modal {
+    &-block {
+      margin-top: 20px;
+    }
+  }
+}
+
+.add-tag {
+  // margin-bottom: 40px;
+}
+
+div[contenteditable]:empty:before {
+  content  : attr(placeholder);
+  color    : #CCCCCC;
+  font-size: 14px;
+}
+
+div[contenteditable]:focus {
+  content: none;
+}
