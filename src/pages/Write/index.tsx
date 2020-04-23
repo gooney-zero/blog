@@ -316,7 +316,7 @@ export function Write() {
                                     icon={
                                         <Icon style={{ cursor: 'pointer' }} type="icon-tianjia" />
                                     }
-                                ></Button>
+                                />
                             }
                         />
                     </div>

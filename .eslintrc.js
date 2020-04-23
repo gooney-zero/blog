@@ -1,5 +1,5 @@
 module.exports = {
-    extends: ['alloy', 'alloy/typescript'],
+    extends: ['alloy', 'alloy/typescript', 'alloy/react'],
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint'],
     parserOptions: {
