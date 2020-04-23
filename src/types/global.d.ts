@@ -1,3 +1,4 @@
-declare type IObj = Record<string | symbol | number, any>
+type IObj = Record<string | symbol | number, any>;
 
-declare interface EmptyInterface { }
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface EmptyInterface {}

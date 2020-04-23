@@ -1,4 +1,4 @@
-import { fetchGet, customRequest } from "../fetch";
+import { fetchGet, customRequest, fetchPost } from "../fetch";
 
 
 
@@ -14,9 +14,8 @@ export const getTagsApi = fetchGet({
  * @description 添加标签
  * @author wenguang zhang
  */
-export const addTagApi = customRequest({
+export const addTagApi = fetchPost({
   url: '/api/v1/tags',
-  method: 'post'
 })
 
 /**

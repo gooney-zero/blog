@@ -8,14 +8,15 @@ import { getArticlesServe } from "src/data-source/article";
 import { HTTP_STATUS, ICONT_SCRIPT_URL } from "src/constants/common";
 import { ArticleList } from "src/types/api/article/response/getArticles";
 import { TagItem } from "src/types/api/tag/response/getTags";
-import { message } from 'antd';
+import { message, Skeleton } from 'antd';
 import { useHistory } from "react-router";
 import { Icon } from "src/components/Icon";
 
 interface PostsState {
   articleList: ArticleList[],
-  count: number,
+  count: number
   tags: TagItem[]
+  loading: boolean
 }
 
 
@@ -25,6 +26,7 @@ export default function Posts() {
     articleList: [],
     count: 0,
     tags: [],
+    loading: true,
   })
   useEffect(() => {
     getArticlesServe().then(res => {
@@ -36,6 +38,7 @@ export default function Posts() {
           ...state,
           articleList: data.articleList,
           count: data.count,
+          loading: false
         })
       }
     })
@@ -58,20 +61,23 @@ export default function Posts() {
   const title = (title: string) => (<h1>{title}</h1>);
   return (
     <section>
-      <div className="posts-header">
-        <h1 className="posts-title">文章</h1>
-        <h1 className="posts-title"><Icon type="icon-xiezuo" /></h1>
-      </div>
-      {state.articleList.map(v => (
-        <div onClick={() => history.push({ pathname: `/main/article/${v.articleId}` })} style={{ marginBottom: '20px' }}>
-          <Card
-            hoverable
-          >
-            <Card.Meta title={title(v.title)} description={desc(v)} />
-          </Card>
-
+      <Skeleton active loading={state.loading}>
+        <div className="posts-header">
+          <h1 className="posts-title">文章</h1>
+          <h1 onClick={() => history.push({ pathname: "/write" })} className="posts-title posts-title-write"><Icon type="icon-xiezuo" /></h1>
         </div>
-      ))}
+        {state.articleList.map(v => (
+          <div key={v.articleId} onClick={() => history.push({ pathname: `/main/article/${v.articleId}` })} style={{ marginBottom: '20px' }}>
+            <Card
+
+              hoverable
+            >
+              <Card.Meta title={title(v.title)} description={desc(v)} />
+            </Card>
+
+          </div>
+        ))}
+      </Skeleton>
     </section>
   )
 }
