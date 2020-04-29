@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from 'for-editor';
-import { Input, message, Tag, Modal, Divider, Button } from 'antd';
+import { Input, message, Tag, Modal, Divider, Button, Skeleton } from 'antd';
 import './index.less';
 import { Icon } from 'src/components/Icon';
 import { useHistory } from 'react-router';
@@ -11,7 +11,7 @@ import { ReqAddTagBody } from 'src/types/api/tag/request/postTag';
 import { $sync } from 'src/utils/sync';
 import { isNotEmptyStr } from 'src/utils/tools';
 import { addArticleServe } from 'src/data-source/article';
-import { ROUTER_NAMW } from 'src/constants/route';
+import { PATH_NAME } from 'src/constants/route';
 
 interface WriteState {
     value: string;
@@ -23,6 +23,8 @@ interface WriteState {
     tags: TagItem[];
     title: string;
     desc: string;
+    loading: boolean;
+    publishLoading: boolean;
 }
 
 export function Write() {
@@ -36,7 +38,9 @@ export function Write() {
         addTagLoading: false,
         tags: [],
         title: '',
-        desc: ''
+        desc: '',
+        loading: true,
+        publishLoading: false
     });
     const getTags = () => {
         getTagsApiServe({}).then((res) => {
@@ -49,13 +53,15 @@ export function Write() {
             } else {
                 setState({
                     ...state,
-                    tagList: data.tagList
+                    tagList: data.tagList,
+                    loading: false
                 });
             }
         });
     };
     useEffect(() => {
         getTags();
+        // eslint-disable-next-line
     }, []);
     const $vm = React.createRef<Editor>();
     const handleChange = (value: string) => {
@@ -149,179 +155,208 @@ export function Write() {
             creator: '幻光',
             state: 1
         };
+
         $sync(async () => {
-            const {
-                status: { code, msg }
-            } = (await addArticleServe(body))!;
-            if (code !== HTTP_STATUS.SUCCESS) {
-                message.error('发布失败');
-            } else {
-                message.success('发布成功').then(
-                    () => history.push({ pathname: ROUTER_NAMW.POSTS }),
-                    () => 0
-                );
+            try {
+                setState({
+                    ...state,
+                    publishLoading: true
+                });
+                const {
+                    status: { code }
+                } = (await addArticleServe(body))!;
+                setState({
+                    ...state,
+                    publishLoading: false
+                });
+                if (code !== HTTP_STATUS.SUCCESS) {
+                    message.error('发布失败');
+                } else {
+                    message.success('发布成功').then(
+                        () => history.push({ pathname: PATH_NAME.POSTS }),
+                        () => 0
+                    );
+                }
+            } catch (error) {
+                setState({
+                    ...state,
+                    publishLoading: false
+                });
             }
         });
     };
     return (
-        <section className="write">
-            <header className="write-header">
-                <Button onClick={() => history.goBack()}>返回</Button>
-                <Button onClick={() => publish()} type="primary">
-                    发布
-                    <Icon type="icon-fabu" />
-                </Button>
-            </header>
-            <section className="write-editor">
-                <div style={{ margin: '20px 0' }}>
-                    <div>
-                        <span>标题</span>
-                        <Input.TextArea
-                            value={state.title}
-                            onChange={(e) => setState({ ...state, title: e.target.value })}
-                            className="write-editor-title"
-                            style={{
-                                fontSize: '20px',
-                                fontWeight: 700
-                            }}
-                            placeholder="请输入标题"
-                            rows={1}
-                            maxLength={50}
-                        />
+        <Skeleton active loading={state.loading}>
+            <section className="write">
+                <header className="write-header">
+                    <Button onClick={() => history.goBack()}>返回</Button>
+                    <Button loading={state.publishLoading} onClick={() => publish()} type="primary">
+                        发布
+                        <Icon type="icon-fabu" />
+                    </Button>
+                </header>
+                <section className="write-editor">
+                    <div style={{ margin: '20px 0' }}>
+                        <div>
+                            <span>标题</span>
+                            <Input.TextArea
+                                value={state.title}
+                                onChange={(e) => setState({ ...state, title: e.target.value })}
+                                className="write-editor-title"
+                                style={{
+                                    fontSize: '20px',
+                                    fontWeight: 700
+                                }}
+                                placeholder="请输入标题"
+                                rows={1}
+                                maxLength={50}
+                            />
+                        </div>
+                        <div>
+                            <span>描述</span>
+                            <Input.TextArea
+                                value={state.desc}
+                                onChange={(e) => setState({ ...state, desc: e.target.value })}
+                                className="write-editor-title"
+                                placeholder="请输入描述（可不填）"
+                                rows={1}
+                                maxLength={100}
+                            />
+                        </div>
+                        <section>
+                            <div>标签</div>
+                            <div className="write-tag">
+                                {state.tags.map((v) => (
+                                    <Tag
+                                        style={{ margin: '5px' }}
+                                        color="#55acee"
+                                        onClose={() =>
+                                            setState({
+                                                ...state,
+                                                tags: state.tags.filter(
+                                                    (tag) => tag.name !== v.name
+                                                )
+                                            })
+                                        }
+                                        closable
+                                        title={v.name}
+                                        key={v.id}
+                                    >
+                                        {v.name}
+                                    </Tag>
+                                ))}
+                                <Button
+                                    style={{ margin: '10px 0' }}
+                                    onClick={showModal}
+                                    size="small"
+                                >
+                                    添加标签
+                                </Button>
+                            </div>
+                        </section>
                     </div>
-                    <div>
-                        <span>描述</span>
-                        <Input.TextArea
-                            value={state.desc}
-                            onChange={(e) => setState({ ...state, desc: e.target.value })}
-                            className="write-editor-title"
-                            placeholder="请输入描述（可不填）"
-                            rows={1}
-                            maxLength={100}
-                        />
-                    </div>
-                    <section>
-                        <div>标签</div>
-                        <div className="write-tag">
-                            {state.tags.map((v) => (
+
+                    <Editor
+                        ref={$vm}
+                        onChange={(value) => handleChange(value)}
+                        onSave={(v) => handleSave(v)}
+                        value={state.value}
+                        subfield
+                        placeholder="编辑正文"
+                        preview
+                        toolbar={{
+                            h1: true, // h1
+                            h2: true, // h2
+                            h3: true, // h3
+                            h4: true, // h4
+                            img: true, // 图片
+                            link: true, // 链接
+                            code: true, // 代码块
+                            /* v0.0.9 */
+                            undo: true, // 撤销
+                            redo: true, // 重做
+                            save: true, // 保存
+                            /* v0.2.3 */
+                            subfield: true // 单双栏模式
+                        }}
+                        addImg={($file) => addImg($file)}
+                    />
+                </section>
+                <Modal
+                    title="添加标签"
+                    visible={state.visible}
+                    onCancel={() => setState({ ...state, visible: false })}
+                    onOk={() => setState({ ...state, tags: state.selectTagList, visible: false })}
+                >
+                    <div className="add-tag">
+                        {/* <Input value={state.tagValue} type="text" placeholder="请输入标签" width="30%" suffix={<Icon type="icon-add"></Icon>} /> */}
+                        <div
+                            suppressContentEditableWarning
+                            placeholder="请添加标签"
+                            contentEditable="true"
+                        >
+                            {state.selectTagList.map((v, i) => (
                                 <Tag
-                                    style={{ margin: '5px' }}
-                                    color="#55acee"
                                     onClose={() =>
                                         setState({
                                             ...state,
-                                            tags: state.tags.filter((tag) => tag.name !== v.name)
+                                            selectTagList: state.selectTagList.filter(
+                                                (tag) => tag.name !== v.name
+                                            )
                                         })
                                     }
                                     closable
                                     title={v.name}
-                                    key={v.id}
+                                    key={v.name}
                                 >
                                     {v.name}
                                 </Tag>
                             ))}
-                            <Button style={{ margin: '10px 0' }} onClick={showModal} size="small">
-                                添加标签
-                            </Button>
                         </div>
-                    </section>
-                </div>
-
-                <Editor
-                    ref={$vm}
-                    onChange={(value) => handleChange(value)}
-                    onSave={(v) => handleSave(v)}
-                    value={state.value}
-                    subfield
-                    placeholder="编辑正文"
-                    preview
-                    toolbar={{
-                        h1: true, // h1
-                        h2: true, // h2
-                        h3: true, // h3
-                        h4: true, // h4
-                        img: true, // 图片
-                        link: true, // 链接
-                        code: true, // 代码块
-                        /* v0.0.9 */
-                        undo: true, // 撤销
-                        redo: true, // 重做
-                        save: true, // 保存
-                        /* v0.2.3 */
-                        subfield: true // 单双栏模式
-                    }}
-                    addImg={($file) => addImg($file)}
-                />
-            </section>
-            <Modal
-                title="添加标签"
-                visible={state.visible}
-                onCancel={() => setState({ ...state, visible: false })}
-                onOk={() => setState({ ...state, tags: state.selectTagList, visible: false })}
-            >
-                <div className="add-tag">
-                    {/* <Input value={state.tagValue} type="text" placeholder="请输入标签" width="30%" suffix={<Icon type="icon-add"></Icon>} /> */}
-                    <div
-                        suppressContentEditableWarning
-                        placeholder="请添加标签"
-                        contentEditable="true"
-                    >
-                        {state.selectTagList.map((v, i) => (
+                    </div>
+                    <Divider />
+                    <div className="write-modal-block">
+                        <p>已有标签</p>
+                        {state.tagList.map((v) => (
                             <Tag
-                                onClose={() =>
-                                    setState({
-                                        ...state,
-                                        selectTagList: state.selectTagList.filter(
-                                            (tag) => tag.name !== v.name
-                                        )
-                                    })
-                                }
-                                closable
+                                style={{ margin: '5px' }}
+                                onClick={() => addTag(v)}
                                 title={v.name}
-                                key={v.name}
+                                key={v.id}
                             >
                                 {v.name}
                             </Tag>
                         ))}
                     </div>
-                </div>
-                <Divider />
-                <div className="write-modal-block">
-                    <p>已有标签</p>
-                    {state.tagList.map((v) => (
-                        <Tag
-                            style={{ margin: '5px' }}
-                            onClick={() => addTag(v)}
-                            title={v.name}
-                            key={v.id}
-                        >
-                            {v.name}
-                        </Tag>
-                    ))}
-                </div>
-                <div className="write-modal-block">
-                    <p>新增标签</p>
-                    <div style={{ width: '50%' }}>
-                        <Input
-                            onChange={(e) => setState({ ...state, newTagValue: e.target.value })}
-                            value={state.newTagValue}
-                            placeholder="请输入要添加的标签名称"
-                            type="text"
-                            suffix={
-                                <Button
-                                    onClick={() => newTag()}
-                                    loading={state.addTagLoading}
-                                    type="link"
-                                    shape="circle"
-                                    icon={
-                                        <Icon style={{ cursor: 'pointer' }} type="icon-tianjia" />
-                                    }
-                                />
-                            }
-                        />
+                    <div className="write-modal-block">
+                        <p>新增标签</p>
+                        <div style={{ width: '50%' }}>
+                            <Input
+                                onChange={(e) =>
+                                    setState({ ...state, newTagValue: e.target.value })
+                                }
+                                value={state.newTagValue}
+                                placeholder="请输入要添加的标签名称"
+                                type="text"
+                                suffix={
+                                    <Button
+                                        onClick={() => newTag()}
+                                        loading={state.addTagLoading}
+                                        type="link"
+                                        shape="circle"
+                                        icon={
+                                            <Icon
+                                                style={{ cursor: 'pointer' }}
+                                                type="icon-tianjia"
+                                            />
+                                        }
+                                    />
+                                }
+                            />
+                        </div>
                     </div>
-                </div>
-            </Modal>
-        </section>
+                </Modal>
+            </section>
+        </Skeleton>
     );
 }
