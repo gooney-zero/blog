@@ -5,7 +5,7 @@ import { fetchPost } from '../fetch';
  * @author wenguang zhang
  */
 export const registerApi = fetchPost({
-    url: '/user/register'
+    url: '/api/user/register'
 });
 
 /**
@@ -13,5 +13,5 @@ export const registerApi = fetchPost({
  * @author wenguang zhang
  */
 export const loginApi = fetchPost({
-    url: '/user/login'
+    url: '/api/user/login'
 });

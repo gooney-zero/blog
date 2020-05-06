@@ -3,11 +3,10 @@ import React from 'react';
 import './App.less';
 
 import Routes from './routes';
+import { StoreHOC } from './store';
 
 function App() {
-  return (
-    <Routes />
-  );
+    return <Routes />;
 }
 
-export default App;
+export default StoreHOC(App);

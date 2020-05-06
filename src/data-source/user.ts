@@ -3,6 +3,7 @@ import { IResData } from 'src/types/api/common';
 import { logError } from 'src/utils/log';
 import { ReqRegisterBody } from 'src/types/api/user/request/register';
 import { ReqLoginBody } from 'src/types/api/user/request/login';
+import { ResLoginBody } from 'src/types/api/user/response/login';
 
 export async function registerServe(body: ReqRegisterBody) {
     try {
@@ -14,7 +15,7 @@ export async function registerServe(body: ReqRegisterBody) {
 
 export async function loginServe(body: ReqLoginBody) {
     try {
-        return (await loginApi<IResData>(body)).data.body;
+        return (await loginApi<IResData<ResLoginBody>>(body)).data;
     } catch (error) {
         logError(error);
     }

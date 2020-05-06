@@ -1,42 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './index.less';
-import { GithubOutlined } from '@ant-design/icons';
 import MenuLink from '../MenuLink';
-import { GITHUB_LINK } from 'src/constants/common';
 import { useHistory } from 'react-router';
 import { PATH_NAME } from 'src/constants/route';
-import { Button, Modal, Form, Input, Checkbox } from 'antd';
-import { registerServe } from 'src/data-source/user';
-import { $sync } from 'src/utils/sync';
+import { Register } from './Register';
+import { Login } from './Login';
+import Cookies from 'js-cookie';
+import { Menu, Dropdown } from 'antd';
+import { USER_INFO } from 'src/constants/user';
+import { Icon } from '../Icon';
+import { decode } from 'punycode';
+import { ProviderContext } from 'src/store';
+import { CHANGE_IS_LOGIN, CHANGE_IS_ADMIN } from 'src/store/mutation-types';
 
 export function BlogHeader() {
     const history = useHistory();
     const [visible, setVisible] = useState(false);
-    const layout = {
-        labelCol: { span: 6 },
-        wrapperCol: { span: 12 }
+    const { state, dispatch } = useContext(ProviderContext);
+    const [nickname, setNickname] = useState('');
+    const [loginVisible, setLoginVisible] = useState(false);
+    const logout = () => {
+        Cookies.remove(USER_INFO.NICKNAME);
+        Cookies.remove(USER_INFO.TOKEN);
+        Cookies.remove(USER_INFO.IS_ADMIN);
+        dispatch({ type: CHANGE_IS_LOGIN, payload: false });
+        dispatch({ type: CHANGE_IS_ADMIN, payload: false });
     };
-    const store = {
-        username: 'username',
-        password: 'password',
-        nickname: 'nickname',
-        email: 'email'
+    const menu = (
+        <Menu>
+            <Menu.Item>
+                <span onClick={() => logout()}>
+                    退出登录
+                    <Icon type="logout" />
+                </span>
+            </Menu.Item>
+        </Menu>
+    );
+    useEffect(() => {
+        const nickname = Cookies.get(USER_INFO.NICKNAME);
+        const token = Cookies.get(USER_INFO.TOKEN);
+        if (token && nickname) {
+            dispatch({ type: CHANGE_IS_LOGIN, payload: true });
+            setNickname(decode(nickname));
+        }
+        // eslint-disabled-line
+    }, [nickname, dispatch]);
+    const successCallback = (nickname: string) => {
+        dispatch({ type: CHANGE_IS_LOGIN, payload: true });
+        setNickname(nickname);
+        setLoginVisible(false);
     };
-    const tailLayout = {
-        wrapperCol: { offset: 6, span: 12 }
+    const registerSuccess = () => {
+        setVisible(false);
+        setLoginVisible(true);
     };
-    const onFinish = (values: typeof store) => {
-        $sync(async () => {
-            const {
-                status: { code, msg }
-            } = (await registerServe(values))!;
-        });
-    };
-
-    const onFinishFailed = (errorInfo: any) => {
-        console.log('Failed:', errorInfo);
-    };
-
     return (
         <div className="blog-header">
             <div className="blog-header-wrap">
@@ -69,65 +86,29 @@ export function BlogHeader() {
                 >
                     <GithubOutlined />
                 </a> */}
-                <div>
-                    <a style={{ paddingRight: '10px' }}>登录</a>
-                    <a onClick={() => setVisible(true)}>注册</a>
-                </div>
-            </div>
-            <Modal
-                keyboard={false}
-                maskClosable={false}
-                destroyOnClose
-                cancelText="取消"
-                okText="注册"
-                centered
-                footer={null}
-                visible={visible}
-            >
-                <Form
-                    {...layout}
-                    name="basic"
-                    initialValues={{ remember: true }}
-                    onFinish={(v: any) => onFinish(v)}
-                    onFinishFailed={onFinishFailed}
-                >
-                    <Form.Item
-                        label="用户名"
-                        name={store.username}
-                        rules={[{ required: true, message: '请输入用户名' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="密码"
-                        name={store.password}
-                        rules={[{ required: true, message: '请输入密码' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                    <Form.Item
-                        label="邮箱"
-                        name={store.email}
-                        rules={[{ required: true, message: '请输入邮箱' }]}
-                    >
-                        <Input type="email" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="昵称"
-                        name={store.nickname}
-                        rules={[{ required: true, message: '请输入昵称' }]}
-                    >
-                        <Input type="text" />
-                    </Form.Item>
-                    <Form.Item {...tailLayout}>
-                        <Button type="primary" htmlType="submit">
+                {state.islogin ? (
+                    <Dropdown overlay={menu}>
+                        <div className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                            <p>{nickname}</p>
+                        </div>
+                    </Dropdown>
+                ) : (
+                    <div>
+                        <a
+                            href="void(0)"
+                            onClick={() => setLoginVisible(true)}
+                            style={{ paddingRight: '10px' }}
+                        >
+                            登录
+                        </a>
+                        <a href="void(0)" onClick={() => setVisible(true)}>
                             注册
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                        </a>
+                    </div>
+                )}
+            </div>
+            <Register success={registerSuccess} visible={visible} setVisible={setVisible} />
+            <Login visible={loginVisible} success={successCallback} setVisible={setLoginVisible} />
         </div>
     );
 }

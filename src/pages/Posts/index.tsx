@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { useEffect, useContext } from 'react';
 import './index.less';
-import Card from 'antd/es/card';
-import Divider from 'antd/es/divider';
-import 'antd/es/divider/style/index.less';
-import 'antd/es/card/style/index.less';
+// import Card from 'antd/es/card';
+// import Divider from 'antd/es/divider';
+// import 'antd/es/divider/style/index.less';
+// import 'antd/es/card/style/index.less';
 import { ArticleList } from 'src/types/api/article/response/getArticles';
-import { Skeleton } from 'antd';
+import { Skeleton, Divider, Card } from 'antd';
 import { useHistory } from 'react-router';
 import { Icon } from 'src/components/Icon';
 import { useGetArticles } from 'src/hooks/useArticle';
+import { USER_INFO } from 'src/constants/user';
+import Cookies from 'js-cookie';
+import { ProviderContext } from 'src/store';
+import { CHANGE_IS_ADMIN } from 'src/store/mutation-types';
 
 export default function Posts() {
     const history = useHistory();
     const state = useGetArticles();
+    const {
+        state: { isAdmin },
+        dispatch
+    } = useContext(ProviderContext);
+    useEffect(() => {
+        const admin = Cookies.get(USER_INFO.IS_ADMIN);
+        dispatch({ type: CHANGE_IS_ADMIN, payload: admin === '1' });
+    }, [isAdmin, dispatch]);
     const desc = (v: ArticleList) => (
         <div className="card-meat">
             <div className="card-meat-desc">
@@ -41,12 +53,14 @@ export default function Posts() {
             <Skeleton active loading={state.loading}>
                 <div className="posts-header">
                     <h1 className="posts-title">文章</h1>
-                    <h1
-                        onClick={() => history.push({ pathname: '/write' })}
-                        className="posts-title posts-title-write"
-                    >
-                        <Icon type="icon-xiezuo" />
-                    </h1>
+                    {isAdmin ? (
+                        <h3
+                            onClick={() => history.push({ pathname: '/write' })}
+                            className="posts-title posts-title-write"
+                        >
+                            <Icon type="icon-xiezuo" />
+                        </h3>
+                    ) : null}
                 </div>
                 {state.articleList.map((v) => (
                     <div
