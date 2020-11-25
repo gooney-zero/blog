@@ -13,6 +13,7 @@ export default function About() {
           <ul className="about-content-way">
             <li>Github: {GITHUB_LINK}</li>
             <li>邮箱: wenguangzhang2020@outlook.com</li>
+            <li>微信: lonely-place</li>
           </ul>
         </div>
       </section>
