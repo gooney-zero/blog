@@ -12,7 +12,7 @@ export default function About() {
           <p>联系方式：</p>
           <ul className="about-content-way">
             <li>Github: {GITHUB_LINK}</li>
-            <li>邮箱: 5guang@163.com</li>
+            <li>邮箱: wenguangzhang2020@outlook.com</li>
           </ul>
         </div>
       </section>
